@@ -1,0 +1,238 @@
+<form refresh="120">
+  <label>Rapport de campagne</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="dropdown" token="campaign" searchWhenChanged="true">
+      <label>Campagne</label>
+      <fieldForLabel>host</fieldForLabel>
+      <fieldForValue>host</fieldForValue>
+      <search>
+        <query>index=fischer sourcetype="fischer:console-db" | stats count by host</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="time" searchWhenChanged="true">
+      <label>Période</label>
+      <default>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Intitulé de la campagne sur Fischer-Console</title>
+      <table>
+        <search>
+          <query>index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(campaignId) as Campagne</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Nombre de cibles sur Fischer-Console</title>
+      <single>
+        <search>
+          <query>index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(count)</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Traitement email sur Fischer-Console</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(send) as send latest(fail) as fail latest(count) as count | eval perc=100*((send+fail)/count) | eval perc=round(perc,0) | gauge perc</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">radialGauge</option>
+        <option name="charting.chart.rangeValues">[0,100]</option>
+        <option name="charting.chart.style">minimal</option>
+        <option name="charting.gaugeColors">["0x53a051"]</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Détection du mode de test sur Fischer-Console</title>
+      <single>
+        <search>
+          <query>index=fischer sourcetype="fischer:console-out" host=$campaign$ | rex field=_raw "\d\d:\d\d:\d\d;(?&lt;status&gt;[^;]*);" | eval check_mode=if(status == "CheckOnly","Oui","Non") | stats latest(check_mode)</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">0</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Etat des envois sur Fischer-Console</title>
+      <table>
+        <search>
+          <query>index=fischer sourcetype="fischer:console-out" host=$campaign$ | rex field=_raw "\d\d:\d\d:\d\d;(?&lt;status&gt;[^;]*);" | stats count as Nombre by status | rename status as Etat | addcoltotals labelfield=Etat</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">search?q=index=fischer sourcetype="fischer:console-out" host=$campaign$ | rex field=_raw "\d\d:\d\d:\d\d;(%3F&lt;status&gt;[^;]*);"&amp;earliest=$earliest$&amp;latest=$latest$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Etat des envois sur Fischer-Agent</title>
+      <table>
+        <search>
+          <query>`fischer_exim_transaction` [search `fischer_exim_transaction` | rex field=_raw "\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d (?&lt;message_id&gt;[^ ]*) (?&lt;message&gt;.*)" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=\((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=(?&lt;resolved_host&gt;[^ ]*) \((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | search sender_host=$campaign$ | return 10000 $message_id] | rex field=_raw "\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d (?&lt;message_id&gt;[^ ]*) (?&lt;message&gt;.*)" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=\((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=(?&lt;resolved_host&gt;[^ ]*) \((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | eval delivery_status=case(message LIKE "=&gt;%","Délivré",message LIKE "==%","Différé",message LIKE "**%","Refusé") | rex field=message "(\=\&gt;|\=\=|\*\*) (?&lt;recipient&gt;[^ ]*) " | transaction message_id | stats count as Nombre by delivery_status | rename delivery_status as Etat | addcoltotals labelfield=Etat</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">search?q=`fischer_exim_transaction` | rex field=_raw "\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d (%3F&lt;message_id&gt;[^ ]*) (%3F&lt;message&gt;.*)" | rex field=message "&lt;= (%3F&lt;sender&gt;[^ ]*) H=\((%3F&lt;sender_host&gt;[^)]*)\) \[(%3F&lt;sender_ip&gt;[^\]]*)\]" | rex field=message "&lt;= (%3F&lt;sender&gt;[^ ]*) H=(%3F&lt;resolved_host&gt;[^ ]*) \((%3F&lt;sender_host&gt;[^)]*)\) \[(%3F&lt;sender_ip&gt;[^\]]*)\]" | eval delivery_status=case(message LIKE "=&gt;%25","Délivré",message LIKE "==%25","Différé",message LIKE "**%25","Refusé") | rex field=message "(\=\&gt;|\=\=|\*\*) (%3F&lt;recipient&gt;[^ ]*) " | transaction message_id | search sender_host=$campaign$&amp;earliest=$earliest$&amp;latest=$latest$</link>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <title>Traitement email sur Fischer-Agent</title>
+      <chart>
+        <search>
+          <query>`fischer_exim_transaction` [search `fischer_exim_transaction` | rex field=_raw "\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d (?&lt;message_id&gt;[^ ]*) (?&lt;message&gt;.*)" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=\((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=(?&lt;resolved_host&gt;[^ ]*) \((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | search sender_host=$campaign$ | return 10000 $message_id] | rex field=_raw "\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d (?&lt;message_id&gt;[^ ]*) (?&lt;message&gt;.*)" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=\((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=(?&lt;resolved_host&gt;[^ ]*) \((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | eval delivery_status=case(message LIKE "=&gt;%","Délivré",message LIKE "==%","Différé",message LIKE "**%","Refusé") | rex field=message "(\=\&gt;|\=\=|\*\*) (?&lt;recipient&gt;[^ ]*) " | transaction message_id | eval defered=if(delivery_status == "Différé",1,0) | eval rejected=if(delivery_status == "Refusé",1,0) | eval delivered=if(delivery_status == "Délivré",1,0) | stats sum(defered) as Defered sum(rejected) as Rejected sum(delivered) as Delivered | eval Total=[ search index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(count) as c | return $c] | eval perc=100*((Delivered+Rejected)/Total) | eval perc=round(perc,0) | gauge perc</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">radialGauge</option>
+        <option name="charting.chart.rangeValues">[0,100]</option>
+        <option name="charting.chart.style">minimal</option>
+        <option name="charting.gaugeColors">["0x53a051"]</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Accès à la page d'accueil par OS sur Nginx</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:nginx" uri_query="id=*" | rex field=uri_query "/?id=(?&lt;hash&gt;[^&amp;]*)" | search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | lookup user_agents http_user_agent| stats count as Nombre by ua_os_family | rename ua_os_family as OS</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Accès à la page d'accueil par navigateur sur Nginx</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:nginx" uri_query="id=*" | rex field=uri_query "/?id=(?&lt;hash&gt;[^&amp;]*)" | search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | lookup user_agents http_user_agent| stats count as Nombre by ua_family | rename ua_family as Navigateur</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Nombre de clics sur le lien</title>
+      <single>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash)</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">search?q=index=fischer sourcetype="fischer:php" stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]&amp;earliest=$earliest$&amp;latest=$latest$</link>
+        </drilldown>
+      </single>
+    </panel>
+    <panel>
+      <title>Nombre de soumissions du formulaire</title>
+      <single>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash)</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">search?q=index=fischer sourcetype="fischer:php" stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]&amp;earliest=$earliest$&amp;latest=$latest$</link>
+        </drilldown>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Répartition temporelle des clics sur le lien</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | bucket _time span=1h | timechart dc(hash)</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.text">Temps</option>
+        <option name="charting.axisTitleY.text">Nbre clics</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Répartition temporelle des soumissions du formulaire</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | bucket _time span=1h | timechart dc(hash)</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.text">Temps</option>
+        <option name="charting.axisTitleY.text">Nbre soumissions</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Répartition géographique des soumissions</title>
+      <map>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | iplocation ip_src | geostats latfield=lat longfield=lon dc(hash)</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="mapping.type">marker</option>
+        <option name="refresh.display">progressbar</option>
+      </map>
+    </panel>
+  </row>
+</form>
