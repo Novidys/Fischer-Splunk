@@ -20,7 +20,7 @@
     </input>
     <input type="text" token="bcc" searchWhenChanged="true">
       <label>Bcc to remove</label>
-      <initialValue>*@novidys.com</initialValue>
+      <initialValue>*@csnovidys.com</initialValue>
     </input>
   </fieldset>
   <row>
