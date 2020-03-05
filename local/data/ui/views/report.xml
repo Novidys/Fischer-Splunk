@@ -7,8 +7,8 @@
       <fieldForValue>host</fieldForValue>
       <search>
         <query>index=fischer sourcetype="fischer:console-db" | stats count by host</query>
-        <earliest>-24h@h</earliest>
-        <latest>now</latest>
+        <earliest>0</earliest>
+        <latest></latest>
       </search>
     </input>
     <input type="time" searchWhenChanged="true">
