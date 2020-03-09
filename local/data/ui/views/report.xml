@@ -1,14 +1,14 @@
 <form refresh="120">
   <label>Rapport de campagne</label>
   <fieldset submitButton="false" autoRun="true">
-    <input type="dropdown" token="campaign" searchWhenChanged="true">
+    <input type="dropdown" searchWhenChanged="true" token="campaign">
       <label>Campagne</label>
       <fieldForLabel>host</fieldForLabel>
       <fieldForValue>host</fieldForValue>
       <search>
         <query>index=fischer sourcetype="fischer:console-db" | stats count by host</query>
-        <earliest>-24h@h</earliest>
-        <latest>now</latest>
+        <earliest>0</earliest>
+        <latest></latest>
       </search>
     </input>
     <input type="time" searchWhenChanged="true">
@@ -18,9 +18,20 @@
         <latest>now</latest>
       </default>
     </input>
-    <input type="text" token="bcc" searchWhenChanged="true">
+    <input type="text" searchWhenChanged="true" token="bcc">
       <label>Bcc to remove</label>
-      <initialValue>*@novidys.com</initialValue>
+      <initialValue>*@csnovidys.com</initialValue>
+    </input>
+    <input type="checkbox" searchWhenChanged="true" token="details">
+      <label>Détails</label>
+      <choice value="True">Afficher</choice>
+      <delimiter> </delimiter>
+    </input>
+    <input type="text" searchWhenChanged="true" token="pwd">
+      <label>Mot de passe</label>
+      <prefix>"</prefix>
+      <suffix>"</suffix>
+      <default>*******</default>
     </input>
   </fieldset>
   <row>
@@ -50,7 +61,7 @@
       </single>
     </panel>
     <panel>
-      <title>Traitement email sur Fischer-Console</title>
+      <title>Pourcentage de traitement email sur Fischer-Console</title>
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(send) as send latest(fail) as fail latest(count) as count | eval perc=100*((send+fail)/count) | eval perc=round(perc,0) | gauge perc</query>
@@ -58,9 +69,9 @@
           <latest>$latest$</latest>
         </search>
         <option name="charting.chart">radialGauge</option>
-        <option name="charting.chart.rangeValues">[0,100]</option>
+        <option name="charting.chart.rangeValues">[0,33,66,100]</option>
         <option name="charting.chart.style">minimal</option>
-        <option name="charting.gaugeColors">["0x53a051"]</option>
+        <option name="charting.gaugeColors">["0xdc4e41","0xf1813f","0x53a051"]</option>
         <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
@@ -116,7 +127,7 @@
       </table>
     </panel>
     <panel>
-      <title>Traitement email sur Fischer-Agent</title>
+      <title>Pourcentage de traitement email sur Fischer-Agent</title>
       <chart>
         <search>
           <query>`fischer_exim_transaction` | rex field=_raw "\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d (?&lt;message_id&gt;[^ ]*) (?&lt;message&gt;.*)" | search [search `fischer_exim_transaction` | rex field=_raw "\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d (?&lt;message_id&gt;[^ ]*) (?&lt;message&gt;.*)" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=\((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=(?&lt;resolved_host&gt;[^ ]*) \((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | search sender_host=$campaign$ | table message_id] | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=\((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | rex field=message "&lt;= (?&lt;sender&gt;[^ ]*) H=(?&lt;resolved_host&gt;[^ ]*) \((?&lt;sender_host&gt;[^)]*)\) \[(?&lt;sender_ip&gt;[^\]]*)\]" | eval delivery_status=case(message LIKE "=&gt;%","Délivré",message LIKE "==%","Différé",message LIKE "**%","Refusé") | rex field=message "(\=\&gt;|\=\=|\*\*) (?&lt;recipient&gt;[^ ]*) " | search NOT recipient=$bcc$ | transaction message_id | eval defered=if(delivery_status == "Différé",1,0) | eval rejected=if(delivery_status == "Refusé",1,0) | eval delivered=if(delivery_status == "Délivré",1,0) | stats sum(defered) as Defered sum(rejected) as Rejected sum(delivered) as Delivered | eval Total=[ search index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(count) as c | return $c] | eval perc=100*((Delivered+Rejected)/Total) | eval perc=round(perc,0) | gauge perc</query>
@@ -124,9 +135,9 @@
           <latest>$latest$</latest>
         </search>
         <option name="charting.chart">radialGauge</option>
-        <option name="charting.chart.rangeValues">[0,100]</option>
+        <option name="charting.chart.rangeValues">[0,33,66,100]</option>
         <option name="charting.chart.style">minimal</option>
-        <option name="charting.gaugeColors">["0x53a051"]</option>
+        <option name="charting.gaugeColors">["0xdc4e41","0xf1813f","0x53a051"]</option>
         <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
@@ -141,6 +152,7 @@
           <latest>$latest$</latest>
         </search>
         <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
         <option name="charting.drilldown">none</option>
       </chart>
     </panel>
@@ -153,6 +165,7 @@
           <latest>$latest$</latest>
         </search>
         <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
         <option name="charting.drilldown">none</option>
         <option name="refresh.display">progressbar</option>
       </chart>
@@ -160,7 +173,7 @@
   </row>
   <row>
     <panel>
-      <title>Nombre de clics sur le lien</title>
+      <title>Nombre d'utilisateurs ayant ouvert le lien</title>
       <single>
         <search>
           <query>index=fischer sourcetype="fischer:php" stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash)</query>
@@ -175,7 +188,7 @@
       </single>
     </panel>
     <panel>
-      <title>Nombre de soumissions du formulaire</title>
+      <title>Nombre d'utilisateurs ayant soumis le formulaire</title>
       <single>
         <search>
           <query>index=fischer sourcetype="fischer:php" stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash)</query>
@@ -183,7 +196,9 @@
           <latest>$latest$</latest>
         </search>
         <option name="drilldown">all</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
         <option name="refresh.display">progressbar</option>
+        <option name="useColors">0</option>
         <drilldown>
           <link target="_blank">search?q=index=fischer sourcetype="fischer:php" stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]&amp;earliest=$earliest$&amp;latest=$latest$</link>
         </drilldown>
@@ -192,34 +207,179 @@
   </row>
   <row>
     <panel>
-      <title>Répartition temporelle des clics sur le lien</title>
+      <title>Pourcentage d'utilisateurs ayant ouvert le lien</title>
       <chart>
         <search>
-          <query>index=fischer sourcetype="fischer:php" stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | bucket _time span=1h | timechart dc(hash)</query>
+          <query>index=fischer sourcetype="fischer:php" stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash) AS number
+| eval total=
+    [search index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(count) AS temp 
+|  return $temp] 
+| eval restant=total-number
+| table number,restant 
+| rename number as "Utilisateurs ayant cliqué" restant AS "Utilisateurs n'ayant pas cliqué" | transpose</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
-        <option name="charting.axisTitleX.text">Temps</option>
-        <option name="charting.axisTitleY.text">Nbre clics</option>
-        <option name="charting.chart">column</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
         <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Utilisateurs ayant cliqué":FF4500,"Utilisateurs n'ayant pas cliqué":008000}</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Pourcentage d'utilisateurs ayant soumis le formulaire</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash) AS number
+| eval total=
+    [search index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(count) AS temp | return $temp] 
+| eval restant=total-number
+| table number,restant 
+| rename number as "Utilisateurs ayant soumis" restant AS "Utilisateurs n'ayant pas soumis" | transpose</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.fieldColors">{"Utilisateurs ayant soumis":FF0000,"Utilisateurs n'ayant pas soumis":008000}</option>
         <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
   </row>
   <row>
     <panel>
-      <title>Répartition temporelle des soumissions du formulaire</title>
+      <title>Répartition temporelle</title>
       <chart>
         <search>
-          <query>index=fischer sourcetype="fischer:php" stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | bucket _time span=1h | timechart dc(hash)</query>
+          <query>index=fischer sourcetype="fischer:php" (stat=OK action=index OR action=form) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | bucket _time span=1h | timechart dc(hash) by action 
+|  rename form AS Soumissions index AS Ouvertures 
+|  fields _time Ouvertures Soumissions</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
         <option name="charting.axisTitleX.text">Temps</option>
-        <option name="charting.axisTitleY.text">Nbre soumissions</option>
+        <option name="charting.axisTitleY.text">Nbre clics</option>
+        <option name="charting.axisY.scale">linear</option>
         <option name="charting.chart">column</option>
+        <option name="charting.chart.showDataLabels">all</option>
         <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Ouvertures":FF4500,"Soumissions":FF0000}</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Répartition par département</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,email] 
+|  chart dc(hash) BY department,action | append [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(department) AS department | mvexpand department
+    ] 
+|  dedup department 
+|  sort department
+|  table department,index,form 
+|  rename index AS "Ouvertures" form AS "Soumissions" department AS "Départements"</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Ouvertures":FF4500,"Soumissions":FF0000}</option>
+        <option name="charting.layout.splitSeries">1</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Pourcentage par département</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,email] 
+|  chart dc(hash) BY department,action 
+|  append 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(department) AS department 
+    | mvexpand department] 
+|  dedup department 
+| sort department
+| appendcols 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by department ] | eval perc_index=100*(index/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(form/total) | eval perc_form=round(perc_form,0) | table department,perc_index,perc_form 
+| rename perc_index AS "Ouvertures" perc_form AS "Soumissions" department AS "Départements"</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Ouvertures":FF4500,"Soumissions":FF0000}</option>
+        <option name="charting.layout.splitSeries">1</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Répartition par pays</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,country,email] 
+|  chart dc(hash) BY country,action | append [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(country) AS country | mvexpand country
+    ] 
+|  dedup country 
+|  sort country
+|  table country,index,form 
+|  rename index AS "Ouvertures" form AS "Soumissions" country AS "Pays"</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Ouvertures":FF4500,"Soumissions":FF0000}</option>
+        <option name="charting.layout.splitSeries">1</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Pourcentage par pays</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,country,email] 
+|  chart dc(hash) BY country,action 
+|  append 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(country) AS country 
+    | mvexpand country] 
+|  dedup country 
+| sort country
+| appendcols 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by country ] | eval perc_index=100*(index/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(form/total) | eval perc_form=round(perc_form,0) | table country,perc_index,perc_form 
+| rename perc_index AS "Ouvertures" perc_form AS "Soumissions" country AS "Pays"</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Ouvertures":FF4500,"Soumissions":FF0000}</option>
+        <option name="charting.layout.splitSeries">1</option>
+        <option name="charting.legend.placement">none</option>
         <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
@@ -237,6 +397,26 @@
         <option name="mapping.type">marker</option>
         <option name="refresh.display">progressbar</option>
       </map>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$details$">
+      <title>Liste des soumissions</title>
+      <table>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval supervisor_pwd=sha256($pwd$)
+| search supervisor_pwd=139979d20fb8303eacdd029e61b5d5838d94b0f0f8678505b1915f3f0ea0b4f6
+| join hash
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,country,email]
+| eval Heure=strftime(_time, "%Y-%d-%m %H:%M:%S") 
+| table Heure,name,email,country,department
+| rename name AS Nom department AS Département country AS Pays email AS Courriel</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
     </panel>
   </row>
 </form>
