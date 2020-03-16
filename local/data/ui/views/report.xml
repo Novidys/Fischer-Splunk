@@ -1,12 +1,15 @@
-<form refresh="120">
+<form refresh="120" theme="dark" script="fischer.js">
   <label>Rapport de campagne</label>
   <fieldset submitButton="false" autoRun="true">
+    <html>
+      <div id="refreshButton"/>
+    </html>
     <input type="dropdown" searchWhenChanged="true" token="campaign">
       <label>Campagne</label>
       <fieldForLabel>host</fieldForLabel>
       <fieldForValue>host</fieldForValue>
       <search>
-        <query>index=fischer sourcetype="fischer:console-db" | stats count by host</query>
+        <query>index=fischer | stats count by host</query>
         <earliest>0</earliest>
         <latest></latest>
       </search>
@@ -34,6 +37,13 @@
       <default>*******</default>
     </input>
   </fieldset>
+  <row>
+    <panel>
+      <html>
+      <div id="deleteButton"/>
+    </html>
+    </panel>
+  </row>
   <row>
     <panel>
       <title>Intitulé de la campagne sur Fischer-Console</title>
