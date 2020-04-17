@@ -91,7 +91,7 @@
       <title>Détection du mode de test sur Fischer-Console</title>
       <single>
         <search>
-          <query>index=fischer sourcetype="fischer:console-out" host=$campaign$ | rex field=_raw "\d\d:\d\d:\d\d;(?&lt;status&gt;[^;]*);" | eval check_mode=if(status == "CheckOnly","Oui","Non") | stats latest(check_mode)</query>
+          <query>index=fischer sourcetype="fischer:console-out" host=$campaign$ NOT "START" | rex field=_raw "\d\d:\d\d:\d\d;(?&lt;status&gt;[^;]*);" | eval check_mode=if(status == "CheckOnly","Oui","Non") | stats latest(check_mode)</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
