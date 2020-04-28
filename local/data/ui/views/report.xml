@@ -498,7 +498,7 @@
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,country,email]
 | eval Heure=strftime(_time, "%Y-%d-%m %H:%M:%S") 
 | table Heure,name,email,country,department
-| rename name AS Nom department AS Département country AS Pays email AS Courriel</query>
+| rename name AS Nom department AS $second_field_csv$ country AS $first_field_csv$ email AS Courriel</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
