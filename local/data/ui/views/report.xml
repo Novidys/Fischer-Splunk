@@ -154,7 +154,41 @@
   </row>
   <row>
     <panel>
-      <title>Accès à la page d'accueil par OS sur Nginx</title>
+      <title>Accès à l'image de tracking par OS</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:nginx" "/images/*.gif" 
+| rex field=uri_path "/images/(?&lt;hash&gt;[^.]*).gif"
+| search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] 
+| lookup user_agents http_user_agent| stats count as Nombre by ua_os_family | rename ua_os_family as OS</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Accès à l'image de tracking par navigateur</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:nginx" "/images/*.gif" 
+| rex field=uri_path "/images/(?&lt;hash&gt;[^.]*).gif"
+| search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] 
+| lookup user_agents http_user_agent| stats count as Nombre by ua_family | rename ua_family as Navigateur</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Accès à la page d'accueil par OS sur le site Web</title>
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:nginx" uri_query="id=*" | rex field=uri_query "/?id=(?&lt;hash&gt;[^&amp;]*)" | search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | lookup user_agents http_user_agent| stats count as Nombre by ua_os_family | rename ua_os_family as OS</query>
@@ -167,7 +201,7 @@
       </chart>
     </panel>
     <panel>
-      <title>Accès à la page d'accueil par navigateur sur Nginx</title>
+      <title>Accès à la page d'accueil par navigateur sur le site Web</title>
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:nginx" uri_query="id=*" | rex field=uri_query "/?id=(?&lt;hash&gt;[^&amp;]*)" | search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | lookup user_agents http_user_agent| stats count as Nombre by ua_family | rename ua_family as Navigateur</query>
@@ -183,6 +217,22 @@
   </row>
   <row>
     <panel>
+      <title>Nombre d'utilisateurs ayant ouvert le message</title>
+      <single>
+        <search>
+          <query>index=fischer sourcetype="fischer:nginx" "/images/*.gif" 
+| rex field=uri_path "/images/(?&lt;hash&gt;[^.]*).gif"
+| search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] 
+| stats dc(hash)</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
       <title>Nombre d'utilisateurs ayant ouvert le lien</title>
       <single>
         <search>
@@ -191,6 +241,7 @@
           <latest>$latest$</latest>
         </search>
         <option name="drilldown">all</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
         <option name="refresh.display">progressbar</option>
         <drilldown>
           <link target="_blank">search?q=index=fischer sourcetype="fischer:php" stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]&amp;earliest=$earliest$&amp;latest=$latest$</link>
