@@ -59,6 +59,21 @@
       </table>
     </panel>
     <panel>
+      <title>Date de lancement de la campagne sur Fischer-Console</title>
+      <table>
+        <search>
+          <query>index=fischer sourcetype="fischer:console-out" host=$campaign$
+| reverse 
+| head 1 
+| rex field=_raw "START : (?&lt;launch_date&gt;.*)"  | stats latest(launch_date) as Date</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
       <title>Nombre de cibles sur Fischer-Console</title>
       <single>
         <search>
