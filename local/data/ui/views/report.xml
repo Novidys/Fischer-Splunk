@@ -36,6 +36,16 @@
       <suffix>"</suffix>
       <default>*******</default>
     </input>
+    <input type="text" token="first_field_csv" searchWhenChanged="true">
+      <label>Premier champ CSV</label>
+      <default>pays</default>
+      <initialValue>pays</initialValue>
+    </input>
+    <input type="text" token="second_field_csv" searchWhenChanged="true">
+      <label>Deuxième champ CSV</label>
+      <initialValue>département</initialValue>
+      <default>département</default>
+    </input>
   </fieldset>
   <row>
     <panel>
@@ -349,7 +359,7 @@
   </row>
   <row>
     <panel>
-      <title>Répartition par département</title>
+      <title>Répartition par $second_field_csv$</title>
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:php" stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
@@ -377,7 +387,7 @@
   </row>
   <row>
     <panel>
-      <title>Pourcentage par département</title>
+      <title>Pourcentage par $second_field_csv$</title>
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:php" stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
@@ -407,7 +417,7 @@
   </row>
   <row>
     <panel>
-      <title>Répartition par pays</title>
+      <title>Répartition par $first_field_csv$</title>
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:php" stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
@@ -433,7 +443,7 @@
   </row>
   <row>
     <panel>
-      <title>Pourcentage par pays</title>
+      <title>Pourcentage par $first_field_csv$</title>
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:php" stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
