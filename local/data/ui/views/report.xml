@@ -370,7 +370,10 @@
     ] 
 |  dedup department 
 |  sort department
-|  table department,index,form 
+|  table department,index,form
+|  appendcols 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY department 
+|  table Cibles]
 |  rename index AS "Ouvertures" form AS "Soumissions" department AS $second_field_csv$</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
@@ -429,6 +432,9 @@
 |  dedup country 
 |  sort country
 |  table country,index,form 
+|  appendcols 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY country 
+|  table Cibles]
 |  rename index AS "Ouvertures" form AS "Soumissions" country AS $first_field_csv$</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
