@@ -488,6 +488,23 @@
   </row>
   <row>
     <panel>
+      <title>Taille des mots de passe</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | dedup hash 
+| eval password_length=len(password) 
+| stats count BY password_length 
+| sort password_length</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
       <title>Répartition géographique des soumissions</title>
       <map>
         <search>
