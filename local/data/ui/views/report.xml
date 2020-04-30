@@ -501,6 +501,7 @@
         <option name="charting.chart">column</option>
         <option name="charting.chart.showDataLabels">all</option>
         <option name="charting.drilldown">none</option>
+        <option name="charting.legend.placement">none</option>
       </chart>
     </panel>
   </row>
