@@ -1,4 +1,4 @@
-<form refresh="120" theme="dark" script="fischer.js" hideEdit="true">
+<form refresh="120" theme="dark" script="fischer.js" hideEdit="false">
   <label>Rapport de campagne</label>
   <fieldset submitButton="false" autoRun="true">
     <html>
@@ -499,6 +499,7 @@
           <latest>$latest$</latest>
         </search>
         <option name="charting.chart">column</option>
+        <option name="charting.chart.showDataLabels">all</option>
         <option name="charting.drilldown">none</option>
       </chart>
     </panel>
