@@ -494,7 +494,8 @@
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | dedup hash 
 | eval password_length=len(password) 
 | stats count BY password_length 
-| sort password_length</query>
+| sort password_length
+| rename password_length AS "Taille du mot de passe" count AS Nombre</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
