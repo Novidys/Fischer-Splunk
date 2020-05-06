@@ -508,6 +508,21 @@
   </row>
   <row>
     <panel>
+      <title>Répartition géographique des ouvertures</title>
+      <map>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | iplocation ip_src | geostats latfield=lat longfield=lon dc(hash)</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="mapping.type">marker</option>
+        <option name="refresh.display">progressbar</option>
+      </map>
+    </panel>
+  </row>
+  <row>
+    <panel>
       <title>Répartition géographique des soumissions</title>
       <map>
         <search>
@@ -519,6 +534,26 @@
         <option name="mapping.type">marker</option>
         <option name="refresh.display">progressbar</option>
       </map>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$details$">
+      <title>Liste des ouvertures</title>
+      <table>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval supervisor_pwd=sha256($pwd$)
+| search supervisor_pwd=139979d20fb8303eacdd029e61b5d5838d94b0f0f8678505b1915f3f0ea0b4f6
+| join hash
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,country,email]
+| eval Heure=strftime(_time, "%Y-%d-%m %H:%M:%S") 
+| table Heure,name,email,country,department
+| rename name AS Nom department AS $second_field_csv$ country AS $first_field_csv$ email AS Courriel</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
     </panel>
   </row>
   <row>
