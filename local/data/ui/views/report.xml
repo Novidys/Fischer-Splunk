@@ -457,6 +457,30 @@
   </row>
   <row>
     <panel>
+      <title>Répartition par $first_field_csv$</title>
+      <table>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,country,email] 
+|  chart dc(hash) BY country,action | append [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(country) AS country | mvexpand country
+    ] 
+|  dedup country 
+|  sort country
+|  table country,index,form 
+|  appendcols 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY country 
+|  table Cibles]
+| fillnull
+|  rename index AS "Ouvertures" form AS "Soumissions" country AS $first_field_csv$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
       <title>Pourcentage par $first_field_csv$</title>
       <chart>
         <search>
@@ -484,6 +508,30 @@
         <option name="refresh.display">progressbar</option>
         <option name="height">600</option>
       </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Pourcentage par $first_field_csv$</title>
+      <table>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,country,email] 
+|  chart dc(hash) BY country,action 
+|  append 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(country) AS country 
+    | mvexpand country] 
+|  dedup country 
+| sort country
+| appendcols 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by country ] | eval perc_index=100*(index/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(form/total) | eval perc_form=round(perc_form,0) | table country,perc_index,perc_form 
+| fillnull
+| rename perc_index AS "Ouvertures" perc_form AS "Soumissions" country AS $first_field_csv$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
     </panel>
   </row>
   <row>
