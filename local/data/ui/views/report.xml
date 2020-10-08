@@ -1,4 +1,4 @@
-<form refresh="120" theme="dark" script="fischer.js" hideEdit="true">
+<form theme="dark" script="fischer.js" hideEdit="true">
   <label>Rapport de campagne</label>
   <fieldset submitButton="false" autoRun="true">
     <html>
