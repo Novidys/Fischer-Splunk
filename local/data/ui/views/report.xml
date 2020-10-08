@@ -341,7 +341,7 @@
       <title>Répartition temporelle</title>
       <chart>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (stat=OK action=index OR action=form) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | bucket _time span=1h | timechart dc(hash) by action 
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (stat=OK action=index OR action=form) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | dedup hash,action | bucket _time span=1h | timechart dc(hash) by action 
 |  rename form AS Soumissions index AS Ouvertures 
 |  fields _time Ouvertures Soumissions</query>
           <earliest>$earliest$</earliest>
