@@ -1,4 +1,4 @@
-<form theme="dark" script="fischer.js" hideEdit="true">
+<form script="fischer.js" hideEdit="false">
   <label>Rapport de campagne</label>
   <fieldset submitButton="false" autoRun="true">
     <html>
@@ -552,6 +552,40 @@
         <option name="charting.drilldown">none</option>
         <option name="charting.legend.placement">none</option>
       </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Top 10 des préfixes similaires (avec casse)</title>
+      <table>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=acl | table hash]
+| eval clear_length=floor(len(password)/2)
+| eval clear_password=substr(password,1,clear_length)
+| stats count by clear_password 
+| rename count AS "Nombre" clear_password AS "Mot de passe" 
+| sort limit=10 - Nombre</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Top 10 des préfixes similaires (sans casse)</title>
+      <table>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=acl | table hash]
+| eval clear_length=floor(len(password)/2)
+| eval clear_password=substr(lower(password),1,clear_length)
+| stats count by clear_password 
+| rename count AS "Nombre" clear_password AS "Mot de passe" 
+| sort limit=10 - Nombre</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
     </panel>
   </row>
   <row>
