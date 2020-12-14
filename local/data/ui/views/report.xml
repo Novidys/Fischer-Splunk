@@ -559,7 +559,7 @@
       <title>Top 10 des préfixes similaires (avec casse)</title>
       <table>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=acl | table hash]
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]
 | eval clear_length=floor(len(password)/2)
 | eval clear_password=substr(password,1,clear_length)
 | stats count by clear_password 
@@ -575,7 +575,7 @@
       <title>Top 10 des préfixes similaires (sans casse)</title>
       <table>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=acl | table hash]
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]
 | eval clear_length=floor(len(password)/2)
 | eval clear_password=substr(lower(password),1,clear_length)
 | stats count by clear_password 
