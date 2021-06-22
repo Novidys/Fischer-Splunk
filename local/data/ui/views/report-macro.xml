@@ -215,35 +215,6 @@
   </row>
   <row>
     <panel>
-      <title>Accès à la page d'accueil par OS sur le site Web</title>
-      <chart>
-        <search>
-          <query>index=fischer sourcetype="fischer:nginx" uri_query="id=*" | rex field=uri_query "/?id=(?&lt;hash&gt;[^&amp;]*)" | search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | lookup user_agents http_user_agent| stats count as Nombre by ua_os_family | rename ua_os_family as OS</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="charting.chart">pie</option>
-        <option name="charting.chart.showPercent">true</option>
-        <option name="charting.drilldown">none</option>
-      </chart>
-    </panel>
-    <panel>
-      <title>Accès à la page d'accueil par navigateur sur le site Web</title>
-      <chart>
-        <search>
-          <query>index=fischer sourcetype="fischer:nginx" uri_query="id=*" | rex field=uri_query "/?id=(?&lt;hash&gt;[^&amp;]*)" | search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | lookup user_agents http_user_agent| stats count as Nombre by ua_family | rename ua_family as Navigateur</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="charting.chart">pie</option>
-        <option name="charting.chart.showPercent">true</option>
-        <option name="charting.drilldown">none</option>
-        <option name="refresh.display">progressbar</option>
-      </chart>
-    </panel>
-  </row>
-  <row>
-    <panel>
       <title>Nombre d'utilisateurs ayant ouvert le message</title>
       <single>
         <search>
@@ -260,7 +231,7 @@
       </single>
     </panel>
     <panel>
-      <title>Nombre d'utilisateurs ayant ouvert le lien</title>
+      <title>Nombre d'utilisateurs ayant ouvert le document Word</title>
       <single>
         <search>
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=openDoc [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash)</query>
@@ -276,7 +247,7 @@
       </single>
     </panel>
     <panel>
-      <title>Nombre d'utilisateurs ayant soumis le formulaire</title>
+      <title>Nombre d'utilisateurs ayant exécuté la macro Word</title>
       <single>
         <search>
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=openMacro [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash)</query>
@@ -295,7 +266,7 @@
   </row>
   <row>
     <panel>
-      <title>Pourcentage d'utilisateurs ayant ouvert le lien</title>
+      <title>Pourcentage d'utilisateurs ayant ouvert le document Word</title>
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=openDoc [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash) AS number
@@ -316,7 +287,7 @@
       </chart>
     </panel>
     <panel>
-      <title>Pourcentage d'utilisateurs ayant soumis le formulaire</title>
+      <title>Pourcentage d'utilisateurs ayant executé la macro Word</title>
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=openMacro [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash) AS number
@@ -342,7 +313,7 @@
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (stat=OK action=openDoc OR action=openMacro) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | dedup hash,action | bucket _time span=1h | timechart dc(hash) by action 
-|  rename form AS Exécutions index AS Ouvertures 
+|  rename openMacro AS Exécutions openDoc AS Ouvertures 
 |  fields _time Ouvertures Exécutions</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
@@ -584,60 +555,6 @@
   </row>
   <row>
     <panel>
-      <title>Taille des mots de passe</title>
-      <chart>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=openMacro [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | dedup hash 
-| eval password_length=len(password) 
-| stats count BY password_length 
-| sort password_length
-| rename password_length AS "Taille du mot de passe" count AS Nombre</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="charting.chart">column</option>
-        <option name="charting.chart.showDataLabels">all</option>
-        <option name="charting.drilldown">none</option>
-        <option name="charting.legend.placement">none</option>
-      </chart>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Top 10 des préfixes similaires (avec casse)</title>
-      <table>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=openMacro [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]
-| eval clear_length=floor(len(password)/2)
-| eval clear_password=substr(password,1,clear_length)
-| stats count by clear_password 
-| rename count AS "Nombre" clear_password AS "Mot de passe" 
-| sort limit=10 - Nombre</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="drilldown">none</option>
-      </table>
-    </panel>
-    <panel>
-      <title>Top 10 des préfixes similaires (sans casse)</title>
-      <table>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=openMacro [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]
-| eval clear_length=floor(len(password)/2)
-| eval clear_password=substr(lower(password),1,clear_length)
-| stats count by clear_password 
-| rename count AS "Nombre" clear_password AS "Mot de passe" 
-| sort limit=10 - Nombre</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="drilldown">none</option>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
       <title>Répartition géographique des ouvertures</title>
       <map>
         <search>
@@ -653,7 +570,7 @@
   </row>
   <row>
     <panel>
-      <title>Répartition géographique des soumissions</title>
+      <title>Répartition géographique des exécutions</title>
       <map>
         <search>
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=openMacro [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | iplocation ip_src | geostats latfield=lat longfield=lon dc(hash)</query>
@@ -688,7 +605,7 @@
   </row>
   <row>
     <panel depends="$details$">
-      <title>Liste des soumissions</title>
+      <title>Liste des exécutions</title>
       <table>
         <search>
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=openMacro [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval supervisor_pwd=sha256($pwd$)
