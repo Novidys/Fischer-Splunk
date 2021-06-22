@@ -1,5 +1,5 @@
 <form script="fischer.js" hideEdit="false">
-  <label>Rapport de campagne</label>
+  <label>Rapport de campagne Macro</label>
   <fieldset submitButton="false" autoRun="true">
     <html>
       <div id="refreshButton"/>
@@ -215,35 +215,6 @@
   </row>
   <row>
     <panel>
-      <title>Accès à la page d'accueil par OS sur le site Web</title>
-      <chart>
-        <search>
-          <query>index=fischer sourcetype="fischer:nginx" uri_query="id=*" | rex field=uri_query "/?id=(?&lt;hash&gt;[^&amp;]*)" | search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | lookup user_agents http_user_agent| stats count as Nombre by ua_os_family | rename ua_os_family as OS</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="charting.chart">pie</option>
-        <option name="charting.chart.showPercent">true</option>
-        <option name="charting.drilldown">none</option>
-      </chart>
-    </panel>
-    <panel>
-      <title>Accès à la page d'accueil par navigateur sur le site Web</title>
-      <chart>
-        <search>
-          <query>index=fischer sourcetype="fischer:nginx" uri_query="id=*" | rex field=uri_query "/?id=(?&lt;hash&gt;[^&amp;]*)" | search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | lookup user_agents http_user_agent| stats count as Nombre by ua_family | rename ua_family as Navigateur</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="charting.chart">pie</option>
-        <option name="charting.chart.showPercent">true</option>
-        <option name="charting.drilldown">none</option>
-        <option name="refresh.display">progressbar</option>
-      </chart>
-    </panel>
-  </row>
-  <row>
-    <panel>
       <title>Ouverture du document Word par OS</title>
       <chart>
         <search>
@@ -289,57 +260,6 @@
       </single>
     </panel>
     <panel>
-      <title>Nombre d'utilisateurs ayant ouvert le lien</title>
-      <single>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash)</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="drilldown">all</option>
-        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
-        <option name="refresh.display">progressbar</option>
-        <drilldown>
-          <link target="_blank">search?q=index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]&amp;earliest=$earliest$&amp;latest=$latest$</link>
-        </drilldown>
-      </single>
-    </panel>
-    <panel>
-      <title>Nombre d'utilisateurs ayant soumis le formulaire</title>
-      <single>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash)</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="drilldown">all</option>
-        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="useColors">0</option>
-        <drilldown>
-          <link target="_blank">search?q=index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]&amp;earliest=$earliest$&amp;latest=$latest$</link>
-        </drilldown>
-      </single>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Nombre d'utilisateurs ayant ouvert le message</title>
-      <single>
-        <search>
-          <query>index=fischer sourcetype="fischer:nginx" "/images/*.gif" 
-| rex field=uri_path "/images/(?&lt;hash&gt;[^.]*).gif"
-| search [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] 
-| stats dc(hash)</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="drilldown">none</option>
-        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
-        <option name="refresh.display">progressbar</option>
-      </single>
-    </panel>
-    <panel>
       <title>Nombre d'utilisateurs ayant ouvert le document Word</title>
       <single>
         <search>
@@ -356,7 +276,7 @@
       </single>
     </panel>
     <panel>
-      <title>Nombre d'utilisateurs ayant exécuter la macro</title>
+      <title>Nombre d'utilisateurs ayant exécuté la macro</title>
       <single>
         <search>
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search openMacro=* [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash)</query>
@@ -371,49 +291,6 @@
           <link target="_blank">search?q=index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search openMacro=* [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]&amp;earliest=$earliest$&amp;latest=$latest$</link>
         </drilldown>
       </single>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Pourcentage d'utilisateurs ayant ouvert le lien</title>
-      <chart>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash) AS number
-| eval total=
-    [search index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(count) AS temp 
-|  return $temp] 
-| eval restant=total-number
-| table number,restant 
-| rename number as "Utilisateurs ayant cliqué" restant AS "Utilisateurs n'ayant pas cliqué" | transpose</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="charting.chart">pie</option>
-        <option name="charting.chart.showPercent">true</option>
-        <option name="charting.drilldown">none</option>
-        <option name="charting.fieldColors">{"Utilisateurs ayant cliqué":FFFF00,"Utilisateurs n'ayant pas cliqué":008000}</option>
-        <option name="refresh.display">progressbar</option>
-      </chart>
-    </panel>
-    <panel>
-      <title>Pourcentage d'utilisateurs ayant soumis le formulaire</title>
-      <chart>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash) AS number
-| eval total=
-    [search index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(count) AS temp | return $temp] 
-| eval restant=total-number
-| table number,restant 
-| rename number as "Utilisateurs ayant soumis" restant AS "Utilisateurs n'ayant pas soumis" | transpose</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="charting.chart">pie</option>
-        <option name="charting.drilldown">none</option>
-        <option name="charting.chart.showPercent">true</option>
-        <option name="charting.fieldColors">{"Utilisateurs ayant soumis":FF0000,"Utilisateurs n'ayant pas soumis":008000}</option>
-        <option name="refresh.display">progressbar</option>
-      </chart>
     </panel>
   </row>
   <row>
@@ -464,29 +341,6 @@
       <title>Répartition temporelle</title>
       <chart>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (stat=OK action=index OR action=form) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | dedup hash,action | bucket _time span=1h | timechart dc(hash) by action 
-|  rename form AS Soumissions index AS Ouvertures 
-|  fields _time Ouvertures Soumissions</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="charting.axisTitleX.text">Temps</option>
-        <option name="charting.axisTitleY.text">Nbre clics</option>
-        <option name="charting.axisY.scale">linear</option>
-        <option name="charting.chart">column</option>
-        <option name="charting.chart.showDataLabels">all</option>
-        <option name="charting.drilldown">none</option>
-        <option name="charting.fieldColors">{"Ouvertures":77B5FE,"Soumissions":FF0000}</option>
-        <option name="charting.legend.placement">bottom</option>
-        <option name="refresh.display">progressbar</option>
-      </chart>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Répartition temporelle</title>
-      <chart>
-        <search>
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (openDoc=* OR openMacro=*) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval action=if( like( uri_query, "%openDoc%" ), "openDoc", "openMacro" ) | dedup hash,action | bucket _time span=1h | timechart dc(hash) by action 
 |  rename openDoc AS Ouvertures openMacro AS Exécutions 
 |  fields _time Ouvertures Exécutions</query>
@@ -502,39 +356,6 @@
         <option name="charting.fieldColors">{"Ouvertures":77B5FE,"Exécutions":FF0000}</option>
         <option name="charting.legend.placement">bottom</option>
         <option name="refresh.display">progressbar</option>
-      </chart>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Répartition par $second_field_csv$</title>
-      <chart>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
-    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,email] 
-|  chart dc(hash) BY department,action | append [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(department) AS department | mvexpand department
-    ] 
-|  dedup department 
-|  sort department
-|  table department,index,form
-|  appendcols 
-    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY department 
-|  table Cibles]
-| fillnull
-|  rename index AS "Ouvertures" form AS "Soumissions" department AS $second_field_csv$</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
-        <option name="charting.chart">column</option>
-        <option name="charting.chart.showDataLabels">all</option>
-        <option name="charting.chart.stackMode">default</option>
-        <option name="charting.drilldown">none</option>
-        <option name="charting.fieldColors">{"Ouvertures":77B5FE,"Soumissions":FF0000}</option>
-        <option name="charting.layout.splitSeries">1</option>
-        <option name="charting.legend.placement">none</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="height">600</option>
       </chart>
     </panel>
   </row>
@@ -600,7 +421,7 @@
       <title>Pourcentage par $second_field_csv$</title>
       <chart>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (openDoc=* OR openMacro=*) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval action=if( like( uri_query, "%openDoc%" ), "openDoc", "openMacro" ) | join hash
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,email] 
 |  chart dc(hash) BY department,action 
 |  append 
@@ -619,7 +440,7 @@
         <option name="charting.chart">column</option>
         <option name="charting.chart.showDataLabels">all</option>
         <option name="charting.drilldown">none</option>
-        <option name="charting.fieldColors">{"Ouvertures":77B5FE,"Soumissions":FF0000}</option>
+        <option name="charting.fieldColors">{"Ouvertures":77B5FE,"Exécutions":FF0000}</option>
         <option name="charting.layout.splitSeries">1</option>
         <option name="charting.legend.placement">none</option>
         <option name="refresh.display">progressbar</option>
@@ -632,7 +453,7 @@
       <title>Pourcentage par $second_field_csv$</title>
       <table>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (openDoc=* OR openMacro=*) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval action=if( like( uri_query, "%openDoc%" ), "openDoc", "openMacro" ) | join hash
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,email] 
 |  chart dc(hash) BY department,action 
 |  append 
@@ -643,7 +464,7 @@
 | appendcols 
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by department ] | eval perc_index=100*(index/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(form/total) | eval perc_form=round(perc_form,0) | table department,perc_index,perc_form 
 | fillnull
-| rename perc_index AS "Ouvertures" perc_form AS "Soumissions" department AS $second_field_csv$</query>
+| rename perc_index AS "Ouvertures" perc_form AS "Exécutions" department AS $second_field_csv$</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
@@ -656,7 +477,7 @@
       <title>Répartition par $first_field_csv$</title>
       <chart>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (openDoc=* OR openMacro=*) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,country,email] 
 |  chart dc(hash) BY country,action | append [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(country) AS country | mvexpand country
     ] 
@@ -687,7 +508,7 @@
       <title>Répartition par $first_field_csv$</title>
       <table>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (openDoc=* OR openMacro=*) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,country,email] 
 |  chart dc(hash) BY country,action | append [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(country) AS country | mvexpand country
     ] 
@@ -711,7 +532,7 @@
       <title>Pourcentage par $first_field_csv$</title>
       <chart>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (openDoc=* OR openMacro=*) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,country,email] 
 |  chart dc(hash) BY country,action 
 |  append 
@@ -763,64 +584,10 @@
   </row>
   <row>
     <panel>
-      <title>Taille des mots de passe</title>
-      <chart>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | dedup hash 
-| eval password_length=len(password) 
-| stats count BY password_length 
-| sort password_length
-| rename password_length AS "Taille du mot de passe" count AS Nombre</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="charting.chart">column</option>
-        <option name="charting.chart.showDataLabels">all</option>
-        <option name="charting.drilldown">none</option>
-        <option name="charting.legend.placement">none</option>
-      </chart>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Top 10 des préfixes similaires (avec casse)</title>
-      <table>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]
-| eval clear_length=floor(len(password)/2)
-| eval clear_password=substr(password,1,clear_length)
-| stats count by clear_password 
-| rename count AS "Nombre" clear_password AS "Mot de passe" 
-| sort limit=10 - Nombre</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="drilldown">none</option>
-      </table>
-    </panel>
-    <panel>
-      <title>Top 10 des préfixes similaires (sans casse)</title>
-      <table>
-        <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash]
-| eval clear_length=floor(len(password)/2)
-| eval clear_password=substr(lower(password),1,clear_length)
-| stats count by clear_password 
-| rename count AS "Nombre" clear_password AS "Mot de passe" 
-| sort limit=10 - Nombre</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
-        </search>
-        <option name="drilldown">none</option>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Répartition géographique des ouvertures</title>
+      <title>Répartition géographique des ouvertures du document Word</title>
       <map>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | iplocation ip_src | geostats latfield=lat longfield=lon dc(hash)</query>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search openDoc=* [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | iplocation ip_src | geostats latfield=lat longfield=lon dc(hash)</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
@@ -832,10 +599,10 @@
   </row>
   <row>
     <panel>
-      <title>Répartition géographique des soumissions</title>
+      <title>Répartition géographique des exécutions de la Macro</title>
       <map>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | iplocation ip_src | geostats latfield=lat longfield=lon dc(hash)</query>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search openMacro=* [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | iplocation ip_src | geostats latfield=lat longfield=lon dc(hash)</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
@@ -847,10 +614,10 @@
   </row>
   <row>
     <panel depends="$details$">
-      <title>Liste des ouvertures</title>
+      <title>Liste des ouvertures du document Word</title>
       <table>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=index [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval supervisor_pwd=sha256($pwd$)
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search openDoc=* [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval supervisor_pwd=sha256($pwd$)
 | search supervisor_pwd=139979d20fb8303eacdd029e61b5d5838d94b0f0f8678505b1915f3f0ea0b4f6
 | join hash
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,country,email]
@@ -867,10 +634,10 @@
   </row>
   <row>
     <panel depends="$details$">
-      <title>Liste des soumissions</title>
+      <title>Liste des exécutions de la Macro</title>
       <table>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=form [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval supervisor_pwd=sha256($pwd$)
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search openMacro=* [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval supervisor_pwd=sha256($pwd$)
 | search supervisor_pwd=139979d20fb8303eacdd029e61b5d5838d94b0f0f8678505b1915f3f0ea0b4f6
 | join hash
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,country,email]
