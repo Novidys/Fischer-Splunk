@@ -295,7 +295,7 @@
     [search index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(count) AS temp | return $temp] 
 | eval restant=total-number
 | table number,restant 
-| rename number as "Utilisateurs ayant soumis" restant AS "Utilisateurs n'ayant pas soumis" | transpose</query>
+| rename number as "Utilisateurs ayant exécuté" restant AS "Utilisateurs n'ayant pas exécuté" | transpose</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
@@ -401,7 +401,7 @@
 |  dedup department 
 | sort department
 | appendcols 
-    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by department ] | eval perc_index=100*(index/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(form/total) | eval perc_form=round(perc_form,0) | table department,perc_index,perc_form 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by department ] | eval perc_index=100*(openDoc/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(openMacro/total) | eval perc_form=round(perc_form,0) | table department,perc_index,perc_form 
 | fillnull
 | rename perc_index AS "Ouvertures" perc_form AS "Exécutions" department AS $second_field_csv$</query>
           <earliest>$earliest$</earliest>
@@ -433,7 +433,7 @@
 |  dedup department 
 | sort department
 | appendcols 
-    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by department ] | eval perc_index=100*(index/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(form/total) | eval perc_form=round(perc_form,0) | table department,perc_index,perc_form 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by department ] | eval perc_index=100*(openDoc/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(openMacro/total) | eval perc_form=round(perc_form,0) | table department,perc_index,perc_form 
 | fillnull
 | rename perc_index AS "Ouvertures" perc_form AS "Exécutions" department AS $second_field_csv$</query>
           <earliest>$earliest$</earliest>
@@ -512,7 +512,7 @@
 |  dedup country 
 | sort country
 | appendcols 
-    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by country ] | eval perc_index=100*(index/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(form/total) | eval perc_form=round(perc_form,0) | table country,perc_index,perc_form 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by country ] | eval perc_index=100*(openDoc/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(openMacro/total) | eval perc_form=round(perc_form,0) | table country,perc_index,perc_form 
 | fillnull
 | rename perc_index AS "Ouvertures" perc_form AS "Exécutions" country AS $first_field_csv$</query>
           <earliest>$earliest$</earliest>
@@ -543,7 +543,7 @@
 |  dedup country 
 | sort country
 | appendcols 
-    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by country ] | eval perc_index=100*(index/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(form/total) | eval perc_form=round(perc_form,0) | table country,perc_index,perc_form 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS total by country ] | eval perc_index=100*(openDoc/total) | eval perc_index=round(perc_index,0) | eval perc_form=100*(openMacro/total) | eval perc_form=round(perc_form,0) | table country,perc_index,perc_form 
 | fillnull
 | rename perc_index AS "Ouvertures" perc_form AS "Exécutions" country AS $first_field_csv$</query>
           <earliest>$earliest$</earliest>
