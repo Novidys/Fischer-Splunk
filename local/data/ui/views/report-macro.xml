@@ -282,12 +282,12 @@
         <option name="charting.chart">pie</option>
         <option name="charting.chart.showPercent">true</option>
         <option name="charting.drilldown">none</option>
-        <option name="charting.fieldColors">{"Utilisateurs ayant cliqué":FFFF00,"Utilisateurs n'ayant pas cliqué":008000}</option>
+        <option name="charting.fieldColors">{"Utilisateurs ayant ouvert":FFFF00,"Utilisateurs n'ayant pas ouvert":008000}</option>
         <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
     <panel>
-      <title>Pourcentage d'utilisateurs ayant executé la macro Word</title>
+      <title>Pourcentage d'utilisateurs ayant exécuté la macro Word</title>
       <chart>
         <search>
           <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK action=openMacro [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash) AS number
@@ -302,7 +302,7 @@
         <option name="charting.chart">pie</option>
         <option name="charting.drilldown">none</option>
         <option name="charting.chart.showPercent">true</option>
-        <option name="charting.fieldColors">{"Utilisateurs ayant soumis":FF0000,"Utilisateurs n'ayant pas soumis":008000}</option>
+        <option name="charting.fieldColors">{"Utilisateurs ayant exécuté":FF0000,"Utilisateurs n'ayant pas exécuté":008000}</option>
         <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
