@@ -341,7 +341,7 @@
     ] 
 |  dedup department 
 |  sort department
-|  table department,index,form
+|  table department,openDoc,openMacro
 |  appendcols 
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY department 
 |  table Cibles]
@@ -374,7 +374,7 @@
     ] 
 |  dedup department 
 |  sort department
-|  table department,index,form 
+|  table department,openDoc,openMacro 
 |  appendcols 
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY department 
 |  table Cibles]
@@ -454,7 +454,7 @@
     ] 
 |  dedup country 
 |  sort country
-|  table country,index,form 
+|  table country,openDoc,openMacro 
 |  appendcols 
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY country 
 |  table Cibles]
