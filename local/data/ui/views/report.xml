@@ -418,6 +418,49 @@
   </row>
   <row>
     <panel>
+      <title>Pourcentage d'utilisateurs ayant ouvert le document Word</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search openDoc=* [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash) AS number
+| eval total=
+    [search index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(count) AS temp 
+|  return $temp] 
+| eval restant=total-number
+| table number,restant 
+| rename number as "Utilisateurs ayant ouvert" restant AS "Utilisateurs n'ayant pas ouvert" | transpose</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Utilisateurs ayant ouvert":FFFF00,"Utilisateurs n'ayant pas ouvert":008000}</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Pourcentage d'utilisateurs ayant exécuter la macro</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search openMacro=* [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | stats dc(hash) AS number
+| eval total=
+    [search index=fischer sourcetype="fischer:console-json" host=$campaign$ | stats latest(count) AS temp | return $temp] 
+| eval restant=total-number
+| table number,restant 
+| rename number as "Utilisateurs ayant executé" restant AS "Utilisateurs n'ayant pas exécuté" | transpose</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.fieldColors">{"Utilisateurs ayant exécuté":FF0000,"Utilisateurs n'ayant pas exécuté":008000}</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
       <title>Répartition temporelle</title>
       <chart>
         <search>
@@ -434,6 +477,29 @@
         <option name="charting.chart.showDataLabels">all</option>
         <option name="charting.drilldown">none</option>
         <option name="charting.fieldColors">{"Ouvertures":77B5FE,"Soumissions":FF0000}</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Répartition temporelle</title>
+      <chart>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (openDoc=* OR openMacro=*) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval action=if( like( uri_query, "%openDoc%" ), "openDoc", "openMacro" ) | dedup hash,action | bucket _time span=1h | timechart dc(hash) by action 
+|  rename openDoc AS Ouvertures openMacro AS Exécutions 
+|  fields _time Ouvertures Exécutions</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.text">Temps</option>
+        <option name="charting.axisTitleY.text">Nbre clics</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Ouvertures":77B5FE,"Exécutions":FF0000}</option>
         <option name="charting.legend.placement">bottom</option>
         <option name="refresh.display">progressbar</option>
       </chart>
@@ -475,20 +541,53 @@
   <row>
     <panel>
       <title>Répartition par $second_field_csv$</title>
-      <table>
+      <chart>
         <search>
-          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search stat=OK (action=form OR action=index) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | join hash
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (openDoc=* OR openMacro=*) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval action=if( like( uri_query, "%openDoc%" ), "openDoc", "openMacro" ) | join hash
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,email] 
 |  chart dc(hash) BY department,action | append [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(department) AS department | mvexpand department
     ] 
 |  dedup department 
 |  sort department
-|  table department,index,form 
+|  table department,openDoc,openMacro
 |  appendcols 
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY department 
 |  table Cibles]
 | fillnull
-|  rename index AS "Ouvertures" form AS "Soumissions" department AS $second_field_csv$</query>
+|  rename openDoc AS "Ouvertures" openMacro AS "Exécutions" department AS $second_field_csv$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Ouvertures":77B5FE,"Exécutions":FF0000}</option>
+        <option name="charting.layout.splitSeries">1</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="height">600</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Répartition par $second_field_csv$</title>
+      <table>
+        <search>
+          <query>index=fischer sourcetype="fischer:php" | extract kvdelim="=" pairdelim=";" | search (openDoc=* OR openMacro=*) [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash] | eval action=if( like( uri_query, "%openDoc%" ), "openDoc", "openMacro" ) | join hash
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | table hash,name,department,email] 
+|  chart dc(hash) BY department,action | append [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats values(department) AS department | mvexpand department
+    ] 
+|  dedup department 
+|  sort department
+|  table department,openDoc,openMacro 
+|  appendcols 
+    [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY department 
+|  table Cibles]
+| fillnull
+|  rename openDoc AS "Ouvertures" openMacro AS "Exécutions" department AS $second_field_csv$</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
