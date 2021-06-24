@@ -379,7 +379,7 @@
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY department 
 |  table Cibles]
 | fillnull
-|  rename index AS "Ouvertures" form AS "Exécutions" department AS $second_field_csv$</query>
+|  rename openDoc AS "Ouvertures" openMacro AS "Exécutions" department AS $second_field_csv$</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
@@ -459,7 +459,7 @@
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY country 
 |  table Cibles]
 | fillnull
-|  rename index AS "Ouvertures" form AS "Exécutions" country AS $first_field_csv$</query>
+|  rename openDoc AS "Ouvertures" openMacro AS "Exécutions" country AS $first_field_csv$</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
@@ -485,12 +485,12 @@
     ] 
 |  dedup country 
 |  sort country
-|  table country,index,form 
+|  table country,openDoc,openMacro 
 |  appendcols 
     [search index=fischer sourcetype="fischer:console-db" host=$campaign$ | stats dc(hash) AS Cibles BY country 
 |  table Cibles]
 | fillnull
-|  rename index AS "Ouvertures" form AS "Exécutions" country AS $first_field_csv$</query>
+|  rename openDoc AS "Ouvertures" openMacro AS "Exécutions" country AS $first_field_csv$</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>
